@@ -1,0 +1,25 @@
+version: "3"
+services:
+    web:
+        build: 
+            context: ./
+            dockerfile: ./web/Dockerfile
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Docker
+    db:
+        image: "mcr.microsoft.com/mssql/server"
+        environment:
+            SA_PASSWORD: "Your_password123"
+            ACCEPT_EULA: "Y"
+    unit:
+        build: 
+            context: ./
+            dockerfile: ./unit/Dockerfile
+    integration:
+        build: 
+            context: ./
+            dockerfile: ./integration/Dockerfile
