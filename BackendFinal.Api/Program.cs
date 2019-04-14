@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BackendFinal.Api
 {
@@ -19,6 +16,21 @@ namespace BackendFinal.Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var env = hostingContext.HostingEnvironment;
+                    Console.WriteLine($"Hosting environment is {env.EnvironmentName}");
+                    config.AddJsonFile("appsettings.json", optional: true,
+                            reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json",
+                            optional: true, reloadOnChange: true);
+                    config.AddEnvironmentVariables();
+                })
+                .UseUrls(new ConfigurationBuilder().AddCommandLine(args).Build()["urls"])
+                .UseSerilog((context, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration))
                 .UseStartup<Startup>();
     }
 }
